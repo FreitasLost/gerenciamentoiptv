@@ -45,6 +45,26 @@ button {
 button:hover {
     background-color: #2c8f86;
 }
+.tabs {
+    display: flex;
+    margin-bottom: 1rem;
+}
+.tab-button {
+    padding: 0.5rem 1rem;
+    background-color: #f2f2f2;
+    border: none;
+    cursor: pointer;
+}
+.tab-button.active {
+    background-color: #35a79c;
+    color: white;
+}
+.tab-content {
+    display: none;
+}
+.tab-content.active {
+    display: block;
+}
 table {
     width: 100%;
     border-collapse: collapse;
@@ -69,6 +89,9 @@ th {
 }
 .undefined {
     background-color: #ffeeba;
+}
+.overdue {
+    background-color: #ffa07a;
 }
 .btn-paid {
     background-color: #28a745;
@@ -126,6 +149,16 @@ th {
     text-decoration: none;
     cursor: pointer;
 }
+#embedContainer {
+    margin-top: 1rem;
+    border: 1px solid #ddd;
+    padding: 1rem;
+}
+#embedFrame {
+    border: none;
+    width: 100%;
+    height: 500px;
+}
 </style></head><body>
 <header>
     <h1>Gerenciamento SKFLIX IPTV</h1>
@@ -167,31 +200,62 @@ th {
     </form>
 
     <h2>Pagamentos</h2>
-    <table id="financeTable">
-        <thead>
-            <tr>
-                <th>Data</th>
-                <th>Descrição</th>
-                <th>Tipo</th>
-                <th>Valor</th>
-                <th>Cliente</th>
-                <th>Status</th>
-                <th>Ação</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-        <tfoot>
-            <tr>
-                <td colspan="5" class="total">Total</td>
-                <td id="totalAmount" class="total" colspan="2">R$ 0.00</td>
-            </tr>
-        </tfoot>
-    </table>
+    <div class="tabs">
+        <button class="tab-button active" data-tab="regular-payments">Pagamentos Regulares</button>
+        <button class="tab-button" data-tab="overdue-payments">Vencidos</button>
+    </div>
+    <div id="regular-payments" class="tab-content active">
+        <table id="financeTable">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Tipo</th>
+                    <th>Valor</th>
+                    <th>Cliente</th>
+                    <th>Status</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="5" class="total">Total</td>
+                    <td id="totalAmount" class="total" colspan="2">R$ 0.00</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div id="overdue-payments" class="tab-content">
+        <table id="overdueTable">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Tipo</th>
+                    <th>Valor</th>
+                    <th>Cliente</th>
+                    <th>Status</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
     <h2>Exportar/Importar Dados</h2>
     <button id="exportButton">Exportar Dados</button>
     <button id="importButton">Importar Dados</button>
     <input type="file" id="importFile" style="display:none;">
+
+    <h2>Incorporar Site Externo</h2>
+    <form id="embedForm">
+        <input type="url" id="embedUrl" placeholder="https://exemplo.com" required>
+        <button type="submit">Incorporar Site</button>
+    </form>
+    <div id="embedContainer">
+        <iframe id="embedFrame" src="about:blank" width="100%" height="500px"></iframe>
+    </div>
 </main>
 
 <div id="infoModal" class="modal">
@@ -278,56 +342,88 @@ function deleteClient(id) {
 
 function savePayment(event) {
     event.preventDefault();
+    const startDate = new Date(document.getElementById('date').value);
     const payment = {
         id: Date.now(),
-        date: document.getElementById('date').value,
+        startDate: startDate.toISOString().split('T')[0],
         description: document.getElementById('description').value,
         type: document.getElementById('type').value,
         amount: parseFloat(document.getElementById('amount').value),
         clientId: document.getElementById('clientSelect').value,
-        status: 'undefined'
+        status: 'undefined',
+        recurrenceId: Date.now()
     };
     finances.push(payment);
+    generateRecurringPayments(payment);
     localStorage.setItem('finances', JSON.stringify(finances));
     updateFinanceTable();
     event.target.reset();
 }
 
+function generateRecurringPayments(initialPayment) {
+    const today = new Date();
+    let currentDate = new Date(initialPayment.startDate);
+    while (currentDate <= today) {
+        currentDate.setDate(currentDate.getDate() + 30);
+        if (currentDate <= today) {
+            removeOutdatedEntries(initialPayment.recurrenceId, currentDate);
+            
+            const recurringPayment = {
+                ...initialPayment,
+                id: Date.now() + Math.random(),
+                startDate: currentDate.toISOString().split('T')[0],
+                status: 'unpaid',
+                recurrenceId: initialPayment.recurrenceId
+            };
+            finances.push(recurringPayment);
+        }
+    }
+    localStorage.setItem('finances', JSON.stringify(finances));
+}
+
+function removeOutdatedEntries(recurrenceId, currentDate) {
+    finances = finances.filter(payment => {
+        if (payment.recurrenceId === recurrenceId) {
+            const paymentDate = new Date(payment.startDate);
+            const thirtyDaysAgo = new Date(currentDate);
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            return paymentDate >= thirtyDaysAgo;
+        }
+        return true;
+    });
+}
+
 function updateFinanceTable() {
-    const tbody = document.querySelector('#financeTable tbody');
-    tbody.innerHTML = '';
+    const regularTbody = document.querySelector('#financeTable tbody');
+    const overdueTbody = document.querySelector('#overdueTable tbody');
+    regularTbody.innerHTML = '';
+    overdueTbody.innerHTML = '';
     let total = 0;
     let uniqueClients = new Set();
     let unpaidTotal = 0;
 
-    finances.forEach(payment => {
-        const row = tbody.insertRow();
+    finances.sort((a, b) => new Date(a.startDate) - new Date(b.startDate)).forEach(payment => {
+        const row = document.createElement('tr');
         row.className = payment.status;
-        row.insertCell(0).textContent = payment.date;
-        row.insertCell(1).textContent = payment.description;
-        row.insertCell(2).textContent = payment.type === 'credit' ? 'Crédito' : 'Débito';
-        row.insertCell(3).textContent = `R$ ${payment.amount.toFixed(2)}`;
-        row.insertCell(4).textContent = clients.find(client => client.id == payment.clientId)?.name || 'Cliente Desconhecido';
-        row.insertCell(5).textContent = getStatusText(payment.status);
-        
-        const actionCell = row.insertCell(6);
-        const paidButton = document.createElement('button');
-        paidButton.textContent = 'Pago';
-        paidButton.className = 'btn-paid';
-        paidButton.onclick = () => toggleStatus(payment.id, 'paid');
-        actionCell.appendChild(paidButton);
+        row.innerHTML = `
+            <td>${payment.startDate}</td>
+            <td>${payment.description}</td>
+            <td>${payment.type === 'credit' ? 'Crédito' : 'Débito'}</td>
+            <td>R$ ${payment.amount.toFixed(2)}</td>
+            <td>${clients.find(client => client.id == payment.clientId)?.name || 'Cliente Desconhecido'}</td>
+            <td>${getStatusText(payment.status)}</td>
+            <td>
+                <button class="btn-paid" onclick="toggleStatus(${payment.id}, 'paid')">Pago</button>
+                <button class="btn-unpaid" onclick="toggleStatus(${payment.id}, 'unpaid')">Não Pago</button>
+                <button class="btn-delete" onclick="deletePayment(${payment.id})">Apagar</button>
+            </td>
+        `;
 
-        const unpaidButton = document.createElement('button');
-        unpaidButton.textContent = 'Não Pago';
-        unpaidButton.className = 'btn-unpaid';
-        unpaidButton.onclick = () => toggleStatus(payment.id, 'unpaid');
-        actionCell.appendChild(unpaidButton);
-
-        const deleteButton = document.createElement('button');
-        deleteButton.textContent = 'Apagar';
-        deleteButton.className = 'btn-delete';
-        deleteButton.onclick = () => deletePayment(payment.id);
-        actionCell.appendChild(deleteButton);
+        if (payment.status === 'overdue') {
+            overdueTbody.appendChild(row);
+        } else {
+            regularTbody.appendChild(row);
+        }
 
         if (payment.status === 'paid') {
             total += payment.type === 'credit' ? payment.amount : -payment.amount;
@@ -344,11 +440,11 @@ function updateFinanceTable() {
     
     const discountNote = document.createElement('tr');
     discountNote.innerHTML = `<td colspan="7">Desconto de clientes: R$ ${clientDiscount.toFixed(2)} (R$ 5,00 por cliente com pagamentos pagos)</td>`;
-    tbody.appendChild(discountNote);
+    regularTbody.appendChild(discountNote);
 
     const unpaidNote = document.createElement('tr');
     unpaidNote.innerHTML = `<td colspan="7">Total não pago: R$ ${unpaidTotal.toFixed(2)}</td>`;
-    tbody.appendChild(unpaidNote);
+    regularTbody.appendChild(unpaidNote);
 }
 
 function getStatusText(status) {
@@ -357,6 +453,8 @@ function getStatusText(status) {
             return 'Pago';
         case 'unpaid':
             return 'Não Pago';
+        case 'overdue':
+            return 'Vencido';
         default:
             return 'Indefinido';
     }
@@ -386,7 +484,9 @@ function exportData() {
     };
     const dataStr = JSON.stringify(data);
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    const exportFileDefaultName = 'skflix_iptv_data.txt';
+    
+    const currentDateTime = new Date().toLocaleString().replace(/[/,:]/g, '-').replace(/\s/g, '_');
+    const exportFileDefaultName = `skflix_iptv_${currentDateTime}.txt`;
 
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
@@ -422,26 +522,62 @@ function importData() {
     }
 }
 
-document.getElementById('clientForm').addEventListener('submit', addClient);
-document.getElementById('paymentForm').addEventListener('submit', savePayment);
-document.getElementById('exportButton').addEventListener('click', exportData);
-document.getElementById('importButton').addEventListener('click', () => document.getElementById('importFile').click());
-document.getElementById('importFile').addEventListener('change', importData);
-
-// Modal close functionality
-const modal = document.getElementById('infoModal');
-const span = document.getElementsByClassName('close')[0];
-span.onclick = function() {
-    modal.style.display = 'none';
-}
-window.onclick = function(event) {
-    if (event.target == modal) {
-        modal.style.display = 'none';
-    }
+function embedWebsite(event) {
+    event.preventDefault();
+    const url = document.getElementById('embedUrl').value;
+    const iframe = document.getElementById('embedFrame');
+    iframe.src = url;
 }
 
-updateClientTable();
-updateClientSelect();
-updateFinanceTable();
+function checkPaymentStatuses() {
+    const today = new Date();
+    finances.forEach(payment => {
+        const paymentDate = new Date(payment.startDate);
+        const thirtyDaysAgo = new Date(today);
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        
+        if (paymentDate <= today && payment.status !== 'paid') {
+            if (paymentDate <= thirtyDaysAgo) {
+                payment.status = 'overdue';
+            } else {
+                payment.status = 'unpaid';
+            }
+        }
+    });
+    removeOutdatedEntries(null, today);
+    localStorage.setItem('finances', JSON.stringify(finances));
+    updateFinanceTable();
+}
+
+function initTabs() {
+    const tabs = document.querySelectorAll('.tab-button');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tab.dataset.tab).classList.add('active');
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('clientForm').addEventListener('submit', addClient);
+    document.getElementById('paymentForm').addEventListener('submit', savePayment);
+    document.getElementById('exportButton').addEventListener('click', exportData);
+    document.getElementById('importButton').addEventListener('click', () => document.getElementById('importFile').click());
+    document.getElementById('importFile').addEventListener('change', importData);
+    document.getElementById('embedForm').addEventListener('submit', embedWebsite);
+
+    updateClientTable();
+    updateClientSelect();
+    updateFinanceTable();
+    initTabs();
+});
+
+checkPaymentStatuses();
+setInterval(checkPaymentStatuses, 86400000);
 </script>
 </body></html>
