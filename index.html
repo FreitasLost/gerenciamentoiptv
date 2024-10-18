@@ -187,6 +187,11 @@ th {
             </tr>
         </tfoot>
     </table>
+
+    <h2>Exportar/Importar Dados</h2>
+    <button id="exportButton">Exportar Dados</button>
+    <button id="importButton">Importar Dados</button>
+    <input type="file" id="importFile" style="display:none;">
 </main>
 
 <div id="infoModal" class="modal">
@@ -374,8 +379,54 @@ function deletePayment(id) {
     }
 }
 
+function exportData() {
+    const data = {
+        clients: clients,
+        finances: finances
+    };
+    const dataStr = JSON.stringify(data);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    const exportFileDefaultName = 'skflix_iptv_data.txt';
+
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+}
+
+function importData() {
+    const fileInput = document.getElementById('importFile');
+    const file = fileInput.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                if (data.clients && data.finances) {
+                    clients = data.clients;
+                    finances = data.finances;
+                    localStorage.setItem('clients', JSON.stringify(clients));
+                    localStorage.setItem('finances', JSON.stringify(finances));
+                    updateClientTable();
+                    updateClientSelect();
+                    updateFinanceTable();
+                    alert('Dados importados com sucesso!');
+                } else {
+                    throw new Error('Formato de dados inválido');
+                }
+            } catch (error) {
+                alert('Erro ao importar dados: ' + error.message);
+            }
+        };
+        reader.readAsText(file);
+    }
+}
+
 document.getElementById('clientForm').addEventListener('submit', addClient);
 document.getElementById('paymentForm').addEventListener('submit', savePayment);
+document.getElementById('exportButton').addEventListener('click', exportData);
+document.getElementById('importButton').addEventListener('click', () => document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', importData);
 
 // Modal close functionality
 const modal = document.getElementById('infoModal');
