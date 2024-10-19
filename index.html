@@ -5,16 +5,21 @@ body {
     margin: 0;
     padding: 0;
     background-color: #f4f4f4;
+    background-image: url('https://example.com/default-background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    font-size: 18px; /* Increased from default */
 }
 header {
-    background-color: #35a79c;
+    background-color: #1a4b84;
     color: #ffffff;
     text-align: center;
     padding: 1rem;
 }
 main {
-    padding: 2rem;
-    max-width: 800px;
+    padding: 3rem; /* Increased from 2rem */
+    max-width: 1200px; /* Increased from 800px */
     margin: 0 auto;
     background-color: #ffffff;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -22,28 +27,34 @@ main {
 h1, h2 {
     margin-bottom: 1rem;
 }
+h1 {
+    font-size: 2.5em; /* Larger heading */
+}
+h2 {
+    font-size: 2em; /* Larger subheading */
+}
 form {
     display: flex;
     flex-direction: column;
     margin-bottom: 2rem;
 }
-input, select {
+input, select, button {
     margin-bottom: 1rem;
-    padding: 0.5rem;
-    font-size: 1rem;
+    padding: 0.7rem; /* Increased from 0.5rem */
+    font-size: 1.1rem; /* Slightly larger than body text */
 }
 button {
-    background-color: #35a79c;
+    background-color: #1a4b84;
     color: #ffffff;
     border: none;
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
+    padding: 0.7rem 1rem; /* Increased */
+    font-size: 1.1rem; /* Slightly larger */
     cursor: pointer;
     margin-right: 0.5rem;
     margin-bottom: 0.5rem;
 }
 button:hover {
-    background-color: #2c8f86;
+    background-color: #143963;
 }
 .tabs {
     display: flex;
@@ -56,7 +67,7 @@ button:hover {
     cursor: pointer;
 }
 .tab-button.active {
-    background-color: #35a79c;
+    background-color: #1a4b84;
     color: white;
 }
 .tab-content {
@@ -69,9 +80,10 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 2rem;
+    font-size: 1rem; /* Ensure table text is readable */
 }
 th, td {
-    padding: 0.5rem;
+    padding: 0.7rem; /* Increased from 0.5rem */
     text-align: left;
     border-bottom: 1px solid #ddd;
 }
@@ -94,10 +106,10 @@ th {
     background-color: #ffa07a;
 }
 .btn-paid {
-    background-color: #28a745;
+    background-color: #1a4b84;
 }
 .btn-paid:hover {
-    background-color: #218838;
+    background-color: #143963;
 }
 .btn-unpaid {
     background-color: #dc3545;
@@ -113,10 +125,10 @@ th {
     background-color: #c82333;
 }
 .btn-info {
-    background-color: #17a2b8;
+    background-color: #1a4b84;
 }
 .btn-info:hover {
-    background-color: #138496;
+    background-color: #143963;
 }
 .modal {
     display: none;
@@ -132,10 +144,10 @@ th {
 .modal-content {
     background-color: #fefefe;
     margin: 15% auto;
-    padding: 20px;
+    padding: 30px; /* Increased from 20px */
     border: 1px solid #888;
-    width: 80%;
-    max-width: 500px;
+    width: 90%; /* Increased from 80% */
+    max-width: 700px; /* Increased from 500px */
 }
 .close {
     color: #aaa;
@@ -157,110 +169,148 @@ th {
 #embedFrame {
     border: none;
     width: 100%;
-    height: 500px;
+    height: 700px; /* Increased from 500px */
+}
+#loginContainer {
+    max-width: 400px; /* Increased from 300px */
+    margin: 100px auto;
+    padding: 30px; /* Increased from 20px */
+    background-color: #f4f4f4;
+    border-radius: 5px;
+}
+#loginForm {
+    display: flex;
+    flex-direction: column;
+}
+#loginForm input {
+    margin-bottom: 10px;
+    padding: 5px;
+}
+#logoutButton {
+    position: fixed;
+    top: 10px;
+    right: 10px;
 }
 </style></head><body>
-<header>
-    <h1>Gerenciamento SKFLIX IPTV</h1>
-</header>
-<main>
-    <h2>Adicionar Cliente</h2>
-    <form id="clientForm">
-        <input type="text" id="clientName" placeholder="Nome do Cliente" required>
-        <input type="text" id="clientUsername" placeholder="Nome de Usuário" required>
-        <input type="password" id="clientPassword" placeholder="Senha" required>
-        <button type="submit">Adicionar Cliente</button>
+<div id="loginContainer">
+    <h2>Login</h2>
+    <form id="loginForm">
+        <input type="text" id="username" placeholder="Nome de Usuário" required="">
+        <input type="password" id="password" placeholder="Senha" required="">
+        <button type="submit">Entrar</button>
     </form>
+</div>
+<div id="mainContent" style="display: none;">
+    <header>
+        <h1>Gerenciamento SKFLIX IPTV</h1>
+    </header>
+    <main>
+        <h2>Adicionar Cliente</h2>
+        <form id="clientForm">
+            <input type="text" id="clientName" placeholder="Nome do Cliente" required="">
+            <input type="text" id="clientUsername" placeholder="Nome de Usuário" required="">
+            <input type="password" id="clientPassword" placeholder="Senha" required="">
+            <button type="submit">Adicionar Cliente</button>
+        </form>
 
-    <h2>Lista de Clientes</h2>
-    <table id="clientTable">
-        <thead>
-            <tr>
-                <th>Nome</th>
-                <th>Nome de Usuário</th>
-                <th>Ação</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-
-    <h2>Adicionar Pagamento</h2>
-    <form id="paymentForm">
-        <input type="date" id="date" required>
-        <input type="text" id="description" placeholder="Descrição" required>
-        <select id="type" required>
-            <option value="credit">Crédito</option>
-            <option value="debit">Débito</option>
-        </select>
-        <input type="number" id="amount" placeholder="Valor" step="0.01" required>
-        <select id="clientSelect" required>
-            <option value="">Selecione um cliente</option>
-        </select>
-        <button type="submit">Salvar Pagamento</button>
-    </form>
-
-    <h2>Pagamentos</h2>
-    <div class="tabs">
-        <button class="tab-button active" data-tab="regular-payments">Pagamentos Regulares</button>
-        <button class="tab-button" data-tab="overdue-payments">Vencidos</button>
-    </div>
-    <div id="regular-payments" class="tab-content active">
-        <table id="financeTable">
+        <h2>Lista de Clientes</h2>
+        <table id="clientTable">
             <thead>
                 <tr>
-                    <th>Data</th>
-                    <th>Descrição</th>
-                    <th>Tipo</th>
-                    <th>Valor</th>
-                    <th>Cliente</th>
-                    <th>Status</th>
-                    <th>Ação</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="5" class="total">Total</td>
-                    <td id="totalAmount" class="total" colspan="2">R$ 0.00</td>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
-    <div id="overdue-payments" class="tab-content">
-        <table id="overdueTable">
-            <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Descrição</th>
-                    <th>Tipo</th>
-                    <th>Valor</th>
-                    <th>Cliente</th>
-                    <th>Status</th>
+                    <th>Nome</th>
+                    <th>Nome de Usuário</th>
                     <th>Ação</th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
-    </div>
 
-    <h2>Exportar/Importar Dados</h2>
-    <button id="exportButton">Exportar Dados</button>
-    <button id="importButton">Importar Dados</button>
-    <input type="file" id="importFile" style="display:none;">
+        <h2>Adicionar Pagamento</h2>
+        <form id="paymentForm">
+            <input type="date" id="date" required="">
+            <input type="text" id="description" placeholder="Descrição" required="">
+            <select id="type" required="">
+                <option value="credit">Crédito</option>
+                <option value="debit">Débito</option>
+            </select>
+            <input type="number" id="amount" placeholder="Valor" step="0.01" required="">
+            <select id="clientSelect" required="">
+                <option value="">Selecione um cliente</option>
+            </select>
+            <button type="submit">Salvar Pagamento</button>
+        </form>
 
-    <h2>Incorporar Site Externo</h2>
-    <form id="embedForm">
-        <input type="url" id="embedUrl" placeholder="https://exemplo.com" required>
-        <button type="submit">Incorporar Site</button>
-    </form>
-    <div id="embedContainer">
-        <iframe id="embedFrame" src="about:blank" width="100%" height="500px"></iframe>
-    </div>
-</main>
+        <h2>Pagamentos</h2>
+        <div class="tabs">
+            <button class="tab-button active" data-tab="regular-payments">Pagamentos Regulares</button>
+            <button class="tab-button" data-tab="overdue-payments">Vencidos</button>
+        </div>
+        <div id="regular-payments" class="tab-content active">
+            <table id="financeTable">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Descrição</th>
+                        <th>Tipo</th>
+                        <th>Valor</th>
+                        <th>Cliente</th>
+                        <th>Status</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="5" class="total">Total</td>
+                        <td id="totalAmount" class="total" colspan="2">R$ 0.00</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div id="overdue-payments" class="tab-content">
+            <table id="overdueTable">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Descrição</th>
+                        <th>Tipo</th>
+                        <th>Valor</th>
+                        <th>Cliente</th>
+                        <th>Status</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <h2>Exportar/Importar Dados</h2>
+        <button id="exportButton">Exportar Dados</button>
+        <button id="importButton">Importar Dados</button>
+        <input type="file" id="importFile" style="display:none;">
+
+        <h2>Incorporar Site Externo</h2>
+        <form id="embedForm">
+            <input type="url" id="embedUrl" placeholder="https://exemplo.com" required="">
+            <button type="submit">Incorporar Site</button>
+        </form>
+        <div id="embedContainer">
+            <iframe id="embedFrame" src="about:blank" width="100%" height="700px"></iframe>
+        </div>
+
+        <h2>Editar Imagem de Fundo</h2>
+        <form id="backgroundForm">
+            <input type="url" id="backgroundUrl" placeholder="URL da imagem de fundo">
+            <input type="file" id="backgroundFile" accept="image/*">
+            <button type="submit">Atualizar Imagem de Fundo</button>
+        </form>
+    </main>
+</div>
+<button id="logoutButton" style="display: none;">Sair</button>
 
 <div id="infoModal" class="modal">
     <div class="modal-content">
-        <span class="close">&times;</span>
+        <span class="close" onclick="document.getElementById('infoModal').style.display='none'">×</span>
         <h2>Informações do Cliente</h2>
         <p><strong>Nome:</strong> <span id="modalName"></span></p>
         <p><strong>Nome de Usuário:</strong> <span id="modalUsername"></span></p>
@@ -269,6 +319,41 @@ th {
 </div>
 
 <script>
+const users = [
+    { username: 'admin', password: 'admin123' },
+    { username: 'user1', password: 'pass1' },
+    { username: 'user2', password: 'pass2' }
+];
+
+let currentUser = null;
+
+function login(event) {
+    event.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    const user = users.find(u => u.username === username && u.password === password);
+
+    if (user) {
+        currentUser = user;
+        document.getElementById('loginContainer').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+        document.getElementById('logoutButton').style.display = 'block';
+        loadBackgroundImage();
+    } else {
+        alert('Usuário ou senha inválidos');
+    }
+}
+
+function logout() {
+    currentUser = null;
+    document.getElementById('loginContainer').style.display = 'block';
+    document.getElementById('mainContent').style.display = 'none';
+    document.getElementById('logoutButton').style.display = 'none';
+    document.getElementById('loginForm').reset();
+    document.body.style.backgroundImage = 'none';
+}
+
 let clients = JSON.parse(localStorage.getItem('clients')) || [];
 let finances = JSON.parse(localStorage.getItem('finances')) || [];
 
@@ -563,18 +648,49 @@ function initTabs() {
     });
 }
 
+function updateBackgroundImage(event) {
+    event.preventDefault();
+    const urlInput = document.getElementById('backgroundUrl');
+    const fileInput = document.getElementById('backgroundFile');
+    
+    if (urlInput.value) {
+        document.body.style.backgroundImage = `url(${urlInput.value})`;
+        localStorage.setItem('backgroundImage', urlInput.value);
+    } else if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.body.style.backgroundImage = `url(${e.target.result})`;
+            localStorage.setItem('backgroundImage', e.target.result);
+        }
+        reader.readAsDataURL(fileInput.files[0]);
+    }
+}
+
+function loadBackgroundImage() {
+    const savedBackground = localStorage.getItem('backgroundImage');
+    if (savedBackground) {
+        document.body.style.backgroundImage = `url(${savedBackground})`;
+    } else {
+        document.body.style.backgroundImage = 'url("https://example.com/default-background.jpg")';
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('loginForm').addEventListener('submit', login);
+    document.getElementById('logoutButton').addEventListener('click', logout);
     document.getElementById('clientForm').addEventListener('submit', addClient);
     document.getElementById('paymentForm').addEventListener('submit', savePayment);
     document.getElementById('exportButton').addEventListener('click', exportData);
     document.getElementById('importButton').addEventListener('click', () => document.getElementById('importFile').click());
     document.getElementById('importFile').addEventListener('change', importData);
     document.getElementById('embedForm').addEventListener('submit', embedWebsite);
+    document.getElementById('backgroundForm').addEventListener('submit', updateBackgroundImage);
 
     updateClientTable();
     updateClientSelect();
     updateFinanceTable();
     initTabs();
+    loadBackgroundImage();
 });
 
 checkPaymentStatuses();
